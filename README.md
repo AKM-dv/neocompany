@@ -1,5 +1,13 @@
-# neocompany
+# neocompany — static site (Vite `dist` only)
 
-Service booking platform — Flask API (`backend/`) + Vite React frontend (`frontend/`).
+This branch/repo contains **only the production front-end build** (no source).
 
-See `run.txt` for local setup. Deploy frontend build with `frontend/.env.production` API URL; run API on your host with `backend/.env`.
+- Full project backup on disk: `../WEBSITE-SM-SOURCE-BACKUP`
+
+Rebuild and replace with:
+
+```bash
+# from your full project folder (backup copy):
+cd frontend && npm ci && npm run build
+# then copy dist contents here (repo root) and commit
+```
