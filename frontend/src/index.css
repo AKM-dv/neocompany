@@ -1,0 +1,191 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  --primary: #1a1a2e;
+  --secondary: #16213e;
+  --accent: #e8622a;
+  --surface: #f7f5f0;
+  --surface-dark: #111118;
+  --text-primary: #1c1c1e;
+  --text-muted: #6b6b80;
+  --border: #e2e0da;
+  --success: #2e7d5e;
+  --warning: #d4860b;
+  --danger: #c0392b;
+  --font-display: 'Syne', system-ui, sans-serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-size-primary-scale: 1;
+  --font-size-secondary-scale: 1;
+  --radius-card: 16px;
+  --radius-button: 10px;
+  --radius-input: 10px;
+  --radius-badge: 6px;
+  --shadow-card: 0 2px 16px rgba(0, 0, 0, 0.07);
+  --shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.13);
+  --shadow-modal: 0 24px 64px rgba(0, 0, 0, 0.18);
+  --container: 1280px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: calc(16px * var(--font-size-secondary-scale));
+  color: var(--text-primary);
+  background: #fff;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+.hero-font {
+  font-family: var(--font-display);
+}
+
+h1 {
+  font-size: calc(2.5rem * var(--font-size-primary-scale));
+}
+
+h2 {
+  font-size: calc(2rem * var(--font-size-primary-scale));
+}
+
+h3 {
+  font-size: calc(1.6rem * var(--font-size-primary-scale));
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+.container {
+  width: 100%;
+  max-width: var(--container);
+  margin: 0 auto;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+body[data-ui-theme='compact'] .container {
+  max-width: 1180px;
+}
+
+body[data-ui-theme='spacious'] .container {
+  max-width: 1360px;
+}
+
+body[data-ui-theme='editorial'] .section-title {
+  letter-spacing: 0.02em;
+  font-weight: 800;
+}
+
+body[data-ui-theme='compact'] .home-section {
+  padding-top: 44px !important;
+  padding-bottom: 44px !important;
+}
+
+.fade-up {
+  animation: fadeUp 0.55s ease-out both;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes checkDraw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Rich text from CMS */
+.cms-content h1,
+.cms-content h2,
+.cms-content h3 {
+  font-family: var(--font-display);
+}
+.cms-content p {
+  font-size: 16px;
+  line-height: 1.8;
+}
+.cms-content blockquote {
+  margin: 1rem 0;
+  padding-left: 1rem;
+  border-left: 4px solid var(--accent);
+  font-style: italic;
+  color: var(--text-muted);
+}
+.cms-content img {
+  max-width: 100%;
+  border-radius: 12px;
+}
+
+/* React Quill in admin */
+.ql-toolbar.ql-snow {
+  border-radius: 8px 8px 0 0;
+  border-color: var(--admin-border, #2e2e3e) !important;
+  background: #f8f8fb;
+}
+.ql-container.ql-snow {
+  border-radius: 0 0 8px 8px;
+  border-color: var(--admin-border, #2e2e3e) !important;
+  min-height: 420px;
+  font-family: var(--font-body);
+  font-size: 15px;
+}

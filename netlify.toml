@@ -1,0 +1,16 @@
+# Netlify (custom domain neocompany.neighhsopglobal.com): connect repo; optional overrides:
+#   VITE_API_URL = https://b.neocompany.neighshopglobal.com  (usually set in frontend/.env.production)
+# Backend lives at b.neocompany.neighshopglobal.com — ensure Flask HTTPS + DB env there.
+
+[build]
+  command = "cd frontend && npm ci && npm run build"
+  publish = "frontend/dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Single-page app (React Router)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

@@ -1,0 +1,424 @@
+# 🛠️ Service Booking Website — Full Project Documentation
+
+---
+
+## 1. PROJECT OVERVIEW
+
+| Field | Detail |
+|---|---|
+| **Project Type** | Service Booking Web Application |
+| **Service Type** | Multiple / Mixed Categories |
+| **Booking Flow** | Cart → Checkout → Admin Confirms (COD/Manual) |
+| **Payment** | No gateway — Cash on Delivery / Manual |
+| **User Accounts** | Guest Checkout Only (no login/register) |
+| **Location** | Multiple Cities with Area Selection |
+| **Notifications** | Email only (User + Admin) |
+| **Frontend** | React JS (with React Router, Axios, Context API) |
+| **Backend** | Python Flask — single `app.py` |
+| **Database** | MySQL via `mysql-connector-python` |
+
+---
+
+## 2. TECH STACK
+
+### Frontend
+- React JS (Vite)
+- React Router DOM
+- Axios
+- Context API (Cart, CMS data)
+- Plain CSS / CSS Variables (theme driven by Admin CMS)
+
+### Backend
+- Python Flask
+- `mysql-connector-python`
+- Flask-Mail (email notifications)
+- Flask-CORS
+- `python-dotenv`
+
+### Database
+- MySQL 8.x
+
+---
+
+## 3. FOLDER STRUCTURE
+
+```
+project-root/
+│
+├── backend/
+│   ├── app.py                  ← Single Flask entry point
+│   ├── .env                    ← DB creds, mail config
+│   └── requirements.txt
+│
+└── frontend/
+    ├── public/
+    ├── src/
+    │   ├── admin/
+    │   │   ├── AdminLayout.jsx
+    │   │   ├── pages/
+    │   │   │   ├── Dashboard.jsx
+    │   │   │   ├── ManageServices.jsx
+    │   │   │   ├── ManageCategories.jsx
+    │   │   │   ├── ManageCities.jsx
+    │   │   │   ├── ManageAreas.jsx
+    │   │   │   ├── ManageBookings.jsx
+    │   │   │   ├── CMSPages.jsx         ← About, Contact, Policies
+    │   │   │   ├── HeroBanner.jsx
+    │   │   │   ├── ThemeSettings.jsx    ← Color palette editor
+    │   │   │   └── AdminLogin.jsx
+    │   │
+    │   ├── user/
+    │   │   ├── UserLayout.jsx
+    │   │   ├── pages/
+    │   │   │   ├── Home.jsx
+    │   │   │   ├── Services.jsx
+    │   │   │   ├── ServiceDetail.jsx
+    │   │   │   ├── Cart.jsx
+    │   │   │   ├── Checkout.jsx
+    │   │   │   ├── BookingConfirmation.jsx
+    │   │   │   ├── AboutUs.jsx
+    │   │   │   ├── ContactUs.jsx
+    │   │   │   └── Policies.jsx
+    │   │
+    │   ├── context/
+    │   │   ├── CartContext.jsx
+    │   │   └── CMSContext.jsx           ← Site-wide CMS data
+    │   │
+    │   ├── components/
+    │   │   ├── Navbar.jsx
+    │   │   ├── Footer.jsx
+    │   │   ├── HeroBanner.jsx
+    │   │   ├── ServiceCard.jsx
+    │   │   ├── CategoryFilter.jsx
+    │   │   ├── CityAreaSelector.jsx
+    │   │   └── CartDrawer.jsx
+    │   │
+    │   ├── App.jsx
+    │   └── main.jsx
+    └── index.html
+```
+
+---
+
+## 4. DATABASE SCHEMA
+
+### `admin_users`
+| Column | Type | Notes |
+|---|---|---|
+| id | INT PK AI | |
+| username | VARCHAR(100) | |
+| password_hash | VARCHAR(255) | bcrypt hashed |
+| created_at | DATETIME | |
+
+---
+
+### `cms_settings`
+| Column | Type | Notes |
+|---|---|---|
+| id | INT PK AI | |
+| setting_key | VARCHAR(100) | UNIQUE |
+| setting_value | LONGTEXT | JSON or plain text |
+| updated_at | DATETIME | |
+
+> Stores: color palette, site name, logo URL, hero image, hero text, about us content, contact us content, policy pages, footer text, etc.
+
+---
+
+### `categories`
+| Column | Type | Notes |
+|---|---|---|
+| id | INT PK AI | |
+| name | VARCHAR(100) | |
+| icon_url | VARCHAR(255) | |
+| is_active | TINYINT(1) | |
+
+---
+
+### `services`
+| Column | Type | Notes |
+|---|---|---|
+| id | INT PK AI | |
+| category_id | INT FK | → categories.id |
+| name | VARCHAR(150) | |
+| description | TEXT | |
+| price | DECIMAL(10,2) | |
+| duration_minutes | INT | |
+| image_url | VARCHAR(255) | |
+| is_active | TINYINT(1) | |
+
+---
+
+### `cities`
+| Column | Type | Notes |
+|---|---|---|
+| id | INT PK AI | |
+| name | VARCHAR(100) | |
+| is_active | TINYINT(1) | |
+
+---
+
+### `areas`
+| Column | Type | Notes |
+|---|---|---|
+| id | INT PK AI | |
+| city_id | INT FK | → cities.id |
+| name | VARCHAR(100) | |
+| is_active | TINYINT(1) | |
+
+---
+
+### `bookings`
+| Column | Type | Notes |
+|---|---|---|
+| id | INT PK AI | |
+| booking_ref | VARCHAR(20) | UNIQUE, auto-generated |
+| guest_name | VARCHAR(150) | |
+| guest_email | VARCHAR(150) | |
+| guest_phone | VARCHAR(20) | |
+| city_id | INT FK | → cities.id |
+| area_id | INT FK | → areas.id |
+| address | TEXT | |
+| scheduled_date | DATE | |
+| scheduled_time | TIME | |
+| total_amount | DECIMAL(10,2) | |
+| payment_method | VARCHAR(50) | Default: 'COD' |
+| status | ENUM | pending, confirmed, in_progress, completed, cancelled |
+| admin_notes | TEXT | |
+| created_at | DATETIME | |
+
+---
+
+### `booking_items`
+| Column | Type | Notes |
+|---|---|---|
+| id | INT PK AI | |
+| booking_id | INT FK | → bookings.id |
+| service_id | INT FK | → services.id |
+| service_name | VARCHAR(150) | Snapshot at time of booking |
+| price | DECIMAL(10,2) | Snapshot |
+| quantity | INT | |
+
+---
+
+## 5. API ENDPOINT MAP
+
+All routes prefix: `/api`
+
+### AUTH (Admin)
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/admin/login` | Admin login |
+| POST | `/api/admin/logout` | Admin logout |
+
+---
+
+### CMS
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/cms` | Get all CMS settings (public) |
+| PUT | `/api/admin/cms` | Update CMS settings (admin) |
+| POST | `/api/admin/cms/upload` | Upload hero image / logo (admin) |
+
+---
+
+### CATEGORIES
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/categories` | List active categories (public) |
+| GET | `/api/admin/categories` | List all categories (admin) |
+| POST | `/api/admin/categories` | Create category |
+| PUT | `/api/admin/categories/<id>` | Update category |
+| DELETE | `/api/admin/categories/<id>` | Delete category |
+
+---
+
+### SERVICES
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/services` | List active services, filter by category |
+| GET | `/api/services/<id>` | Single service detail |
+| GET | `/api/admin/services` | All services (admin) |
+| POST | `/api/admin/services` | Create service |
+| PUT | `/api/admin/services/<id>` | Update service |
+| DELETE | `/api/admin/services/<id>` | Delete service |
+
+---
+
+### CITIES & AREAS
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/cities` | Active cities (public) |
+| GET | `/api/areas?city_id=` | Areas by city (public) |
+| POST | `/api/admin/cities` | Create city |
+| PUT | `/api/admin/cities/<id>` | Update city |
+| POST | `/api/admin/areas` | Create area |
+| PUT | `/api/admin/areas/<id>` | Update area |
+
+---
+
+### BOOKINGS
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/bookings` | Create booking (guest) |
+| GET | `/api/bookings/<ref>` | Get booking by ref (guest tracking) |
+| GET | `/api/admin/bookings` | All bookings (admin, filterable) |
+| GET | `/api/admin/bookings/<id>` | Single booking detail |
+| PUT | `/api/admin/bookings/<id>/status` | Update booking status |
+
+---
+
+## 6. ADMIN PANEL — FEATURE LIST
+
+| Module | Features |
+|---|---|
+| **Dashboard** | Total bookings, pending count, today's bookings, revenue summary |
+| **Theme Settings** | Primary color, secondary color, accent color, font family — saved to `cms_settings`, applied via CSS variables on frontend |
+| **Hero Banner** | Upload banner image, edit headline, subheadline, CTA button text |
+| **Site Content CMS** | Rich-text editor for: About Us, Contact Us, Privacy Policy, Terms of Service, Refund Policy |
+| **Categories** | Add/Edit/Delete categories with icon |
+| **Services** | Add/Edit/Delete services — name, description, price, duration, image, category |
+| **Cities & Areas** | Add/manage cities; add areas under each city |
+| **Bookings** | View all bookings, filter by status/date/city, update status, add admin notes |
+| **Notifications** | Auto-email sent to guest + admin on new booking |
+
+---
+
+## 7. USER SITE — FEATURE LIST
+
+| Page | Features |
+|---|---|
+| **Home** | CMS-driven hero banner, featured categories, featured services |
+| **Services** | Browse by category, city/area filter, service cards with price & duration |
+| **Service Detail** | Full description, add to cart with quantity |
+| **Cart** | Slide-out drawer, item list, quantity change, remove, subtotal |
+| **Checkout** | Guest info form (name, email, phone, address, city, area), date & time slot picker, order summary, COD confirmation |
+| **Booking Confirmation** | Booking reference shown, summary, email confirmation sent |
+| **About Us** | CMS-rendered content |
+| **Contact Us** | CMS-rendered content + contact form (sends email to admin) |
+| **Policies** | CMS-rendered privacy/terms/refund pages |
+
+---
+
+## 8. BOOKING FLOW (Step by Step)
+
+```
+User browses services
+        ↓
+Adds services to Cart (Context API, localStorage)
+        ↓
+Goes to Checkout
+        ↓
+Fills: Name, Email, Phone, City, Area, Address, Date, Time
+        ↓
+Submits Order → POST /api/bookings
+        ↓
+Backend creates booking + booking_items
+        ↓
+Email sent to guest (booking ref + summary)
+Email sent to admin (new booking alert)
+        ↓
+Confirmation page shown with booking reference
+        ↓
+Admin sees booking in panel → Updates status
+```
+
+---
+
+## 9. CMS — HOW IT WORKS
+
+- All editable content stored in `cms_settings` as key-value pairs
+- Frontend fetches `/api/cms` on app load via `CMSContext`
+- Theme colors injected as `document.documentElement.style.setProperty('--primary', value)`
+- Hero image stored as URL (uploaded via admin, served as static file)
+- CMS pages (About, Contact, Policies) rendered via `dangerouslySetInnerHTML` from stored HTML content (admin uses rich text editor like Quill.js)
+
+---
+
+## 10. EMAIL NOTIFICATIONS
+
+Using **Flask-Mail** with SMTP (Gmail or any provider).
+
+**Triggers:**
+1. New booking created → Email to guest (booking ref, items, scheduled time, COD note)
+2. New booking created → Email to admin (same details + guest contact info)
+3. Booking status updated → Email to guest (optional, configurable)
+
+---
+
+## 11. ENVIRONMENT VARIABLES (`.env`)
+
+```
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=yourpassword
+DB_NAME=service_booking
+
+MAIL_SERVER=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USE_TLS=True
+MAIL_USERNAME=youremail@gmail.com
+MAIL_PASSWORD=your_app_password
+ADMIN_EMAIL=admin@yourdomain.com
+
+SECRET_KEY=your_flask_secret_key
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD_HASH=bcrypt_hashed_password
+```
+
+---
+
+## 12. DEVELOPMENT PHASES
+
+### Phase 1 — Foundation
+- [ ] MySQL DB setup + schema creation
+- [ ] Flask `app.py` scaffold with CORS, DB connection, config
+- [ ] React Vite project setup, routing structure, CMSContext, CartContext
+
+### Phase 2 — Backend APIs
+- [ ] Admin auth (login/logout with session)
+- [ ] CMS CRUD endpoints
+- [ ] Categories & Services CRUD
+- [ ] Cities & Areas CRUD
+- [ ] Bookings POST + GET
+
+### Phase 3 — Admin Panel UI
+- [ ] Admin Login page
+- [ ] Dashboard
+- [ ] Theme Settings (color picker → CSS variables)
+- [ ] Hero Banner editor
+- [ ] CMS pages editor (Quill.js rich text)
+- [ ] Categories, Services, Cities, Areas management
+- [ ] Bookings management table
+
+### Phase 4 — User Site
+- [ ] Home page (hero + categories + featured services)
+- [ ] Services listing + filters
+- [ ] Service detail + add to cart
+- [ ] Cart drawer
+- [ ] Checkout form + city/area selector
+- [ ] Booking confirmation page
+- [ ] About, Contact, Policy pages (CMS-rendered)
+
+### Phase 5 — Notifications & Polish
+- [ ] Flask-Mail integration
+- [ ] Email templates (guest + admin)
+- [ ] Mobile responsiveness
+- [ ] Admin panel guards (auth check)
+- [ ] Error handling + loading states
+
+---
+
+## 13. KEY DECISIONS & NOTES
+
+| Decision | Reason |
+|---|---|
+| Single `app.py` | Requested by client; all routes in one file |
+| Guest-only checkout | No user auth complexity; faster to market |
+| CMS via DB key-value | Flexible — admin can edit everything without code |
+| CSS Variables for theme | Real-time theme switching from admin panel |
+| Booking reference (not ID) | Human-readable, shareable, non-sequential for security |
+| Snapshot service name/price in `booking_items` | Protects historical bookings from catalog changes |
+
+---
+
+*Documentation Version: 1.0 | Stack: React + Flask + MySQL*

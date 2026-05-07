@@ -1,0 +1,731 @@
+================================================================
+  SERVICE BOOKING PLATFORM — COMPLETE UI DESCRIPTION GUIDE
+  Version 1.0 | Covers: User Site + Admin Panel
+================================================================
+
+
+════════════════════════════════════════════════════════════════
+  DESIGN LANGUAGE & AESTHETIC DIRECTION
+════════════════════════════════════════════════════════════════
+
+  Overall Tone:
+    Refined, modern, trustworthy. Feels like a premium service
+    brand — not a marketplace. Clean but warm. Professional but
+    approachable. Think "luxury home services meets editorial
+    magazine layout."
+
+  Typography System:
+    Display Font  : "Clash Display" or "Syne" — for headings,
+                    hero titles, section labels. Sharp, geometric,
+                    high personality.
+    Body Font     : "DM Sans" or "Instrument Sans" — clean,
+                    legible, slightly warm. Used for paragraphs,
+                    form labels, descriptions.
+    Mono/Detail   : "JetBrains Mono" — used sparingly for booking
+                    refs, prices, tags, status badges.
+
+  Color Palette (Default — Editable via Admin CMS):
+    --primary       : #1A1A2E   (Deep navy — trust, authority)
+    --accent        : #E8622A   (Warm burnt orange — energy, CTA)
+    --surface       : #F7F5F0   (Off-white cream — warmth, softness)
+    --surface-dark  : #111118   (Admin panel background)
+    --text-primary  : #1C1C1E
+    --text-muted    : #6B6B80
+    --border        : #E2E0DA
+    --success       : #2E7D5E
+    --warning       : #D4860B
+    --danger        : #C0392B
+
+  Spacing System:
+    Base unit: 8px. Scale: 4, 8, 12, 16, 24, 32, 48, 64, 96px.
+
+  Border Radius:
+    Cards: 16px | Buttons: 10px | Tags/Badges: 6px | Inputs: 10px
+
+  Shadows:
+    Card shadow : 0 2px 16px rgba(0,0,0,0.07)
+    Hover shadow: 0 8px 32px rgba(0,0,0,0.13)
+    Modal shadow : 0 24px 64px rgba(0,0,0,0.18)
+
+  Motion Principles:
+    - Page load: staggered fade-up (opacity 0→1, translateY 20px→0)
+      with 80ms delay between elements.
+    - Hover on cards: subtle translateY(-4px) + shadow increase,
+      200ms ease-out.
+    - Cart drawer: slides in from right, 300ms cubic-bezier ease.
+    - Buttons: scale(0.97) on press, immediate release.
+    - All transitions: prefer ease-out, 150–300ms range.
+
+  Grid System:
+    Max content width: 1280px, centered.
+    Column grid: 12-col with 24px gutter on desktop,
+                 4-col with 16px gutter on mobile.
+
+
+════════════════════════════════════════════════════════════════
+  USER SITE — GLOBAL ELEMENTS
+════════════════════════════════════════════════════════════════
+
+  ┌─ NAVBAR ──────────────────────────────────────────────────┐
+  │                                                            │
+  │  Layout: Sticky top. Full-width. Height: 64px.            │
+  │  Background: White with 1px bottom border (#E2E0DA).      │
+  │  On scroll (>80px): subtle blur backdrop + slight shadow. │
+  │                                                            │
+  │  Left   : Logo (SVG or image, max-height 36px) + site     │
+  │           name in Clash Display, 18px, --primary color.   │
+  │                                                            │
+  │  Center : Navigation links — Home, Services, About Us,    │
+  │           Contact Us. Font: DM Sans 14px medium.          │
+  │           Active link: --accent color underline (2px,     │
+  │           bottom offset 4px). Hover: color shift to       │
+  │           --accent, 150ms.                                 │
+  │                                                            │
+  │  Right  : Cart icon button — shopping bag SVG icon with   │
+  │           a floating badge (--accent background, white    │
+  │           text, 18px circle) showing item count.          │
+  │           Badge animates (scale bounce) when count        │
+  │           changes. Clicking opens Cart Drawer.            │
+  │                                                            │
+  │  Mobile : Hamburger menu (3 lines → X animation).        │
+  │           Full-screen overlay menu slides down from top.  │
+  │           Links stacked, 48px tall each. Cart icon stays  │
+  │           visible in top-right always.                    │
+  └────────────────────────────────────────────────────────────┘
+
+  ┌─ FOOTER ──────────────────────────────────────────────────┐
+  │                                                            │
+  │  Background: --primary (deep navy). Text: white/muted.    │
+  │  Padding: 64px top, 40px bottom.                          │
+  │                                                            │
+  │  4-column layout on desktop, 2-col tablet, 1-col mobile.  │
+  │                                                            │
+  │  Col 1 : Logo + short brand description (2 lines max).   │
+  │          Social icons row (if configured in CMS).         │
+  │  Col 2 : "Quick Links" — Home, Services, About, Contact.  │
+  │  Col 3 : "Policies" — Privacy Policy, Terms, Refund.     │
+  │  Col 4 : "Contact Info" — address, phone, email from CMS. │
+  │                                                            │
+  │  Bottom bar: thin 1px border, copyright text left,        │
+  │  "Made with ♥" or powered-by text right (CMS editable).  │
+  └────────────────────────────────────────────────────────────┘
+
+  ┌─ CART DRAWER ─────────────────────────────────────────────┐
+  │                                                            │
+  │  Slide-in panel from right edge. Width: 420px desktop,    │
+  │  100vw mobile. Height: 100vh. Overlay: semi-transparent   │
+  │  black backdrop (clicking closes drawer).                  │
+  │                                                            │
+  │  Header: "Your Cart" title (Clash Display 20px) + item    │
+  │  count badge + X close button (top-right).                │
+  │                                                            │
+  │  Item List (scrollable):                                  │
+  │    Each item row:                                         │
+  │    - Service image thumbnail (60x60px, rounded 8px)       │
+  │    - Service name (DM Sans 15px bold)                     │
+  │    - Category tag (small pill badge, --accent/10% bg)     │
+  │    - Price (JetBrains Mono 14px, --accent color)          │
+  │    - Quantity stepper: [ − ] [ 1 ] [ + ] pill buttons     │
+  │    - Trash icon to remove (appears on hover)              │
+  │    Divider line between each item.                        │
+  │                                                            │
+  │  Footer (fixed at bottom of drawer):                      │
+  │    - Subtotal row: "Subtotal" label + amount (Mono font)  │
+  │    - Note: "Final amount confirmed at checkout"           │
+  │    - "Proceed to Checkout" button — full width, --accent  │
+  │      background, white text, 52px height, rounded 10px.   │
+  │    - "Continue Shopping" text link below button.          │
+  │                                                            │
+  │  Empty State: Centered illustration (shopping bag icon,   │
+  │  large, light grey), "Your cart is empty" heading,        │
+  │  "Browse our services" CTA button.                        │
+  └────────────────────────────────────────────────────────────┘
+
+
+════════════════════════════════════════════════════════════════
+  USER SITE — PAGE BY PAGE
+════════════════════════════════════════════════════════════════
+
+  ┌─ PAGE: HOME ──────────────────────────────────────────────┐
+  │                                                            │
+  │  [HERO SECTION]                                           │
+  │    Full-width, height: 88vh on desktop, 70vh mobile.     │
+  │    Background: Full-cover image (from CMS upload) with    │
+  │    a gradient overlay (bottom 60%: linear gradient from   │
+  │    transparent → --primary at 80% opacity). Ensures text  │
+  │    readability regardless of image.                       │
+  │                                                            │
+  │    Content (left-aligned, vertically centered):           │
+  │    - Small label tag above headline: e.g. "Trusted in     │
+  │      12+ cities" — pill shape, semi-transparent white bg. │
+  │    - Main Headline: Clash Display, 64px desktop / 36px    │
+  │      mobile, white, max-width 620px, line-height 1.1.     │
+  │      (CMS editable)                                       │
+  │    - Subheadline: DM Sans 20px, white/80%, max-width      │
+  │      500px. (CMS editable)                                │
+  │    - CTA Button: (CMS editable text) — --accent bg,       │
+  │      white text, 56px height, rounded 10px, arrow icon    │
+  │      on right. Hover: slight brightness increase.         │
+  │    - City/Area selector pill below CTA: "Select your      │
+  │      city" dropdown inline — compact, glass-morphism      │
+  │      style (white/15% bg, blur backdrop, white border).   │
+  │                                                            │
+  │  [CATEGORIES SECTION]                                     │
+  │    Section heading: "What are you looking for?" (Clash    │
+  │    Display 36px, centered).                               │
+  │    Horizontal scroll row on mobile; 4–6 col grid desktop. │
+  │    Each category card:                                    │
+  │    - Square card, 160x160px desktop, rounded 16px.        │
+  │    - Soft gradient background (unique per category or     │
+  │      uses category icon color).                           │
+  │    - Icon: large (64px), centered.                        │
+  │    - Name below icon: DM Sans 14px semibold.              │
+  │    - Hover: lifts + border color flash in --accent.       │
+  │    Clicking filters Services page by that category.       │
+  │                                                            │
+  │  [FEATURED SERVICES SECTION]                              │
+  │    Section heading: "Popular Services" (left-aligned).    │
+  │    "View All →" link right-aligned, same row.             │
+  │    3-column grid desktop, 2-col tablet, 1-col mobile.     │
+  │    (See Service Card component description below)         │
+  │                                                            │
+  │  [WHY CHOOSE US / TRUST STRIP]                            │
+  │    Full-width band. Background: --primary. White text.    │
+  │    4 icon + stat + label blocks, evenly spaced.           │
+  │    E.g.: ✓ 500+ Services | ★ 4.8 Rating | 🏙 12 Cities   │
+  │    | 🔒 Verified Professionals                            │
+  │    (All CMS editable)                                     │
+  │                                                            │
+  │  [HOW IT WORKS SECTION]                                   │
+  │    3-step horizontal layout. Each step:                   │
+  │    - Large step number (Clash Display 80px, very light    │
+  │      grey, decorative behind-content).                    │
+  │    - Icon (48px circle with --accent/10% bg).             │
+  │    - Step title (18px bold) + description (14px muted).   │
+  │    Steps connected by dashed arrow line on desktop.       │
+  └────────────────────────────────────────────────────────────┘
+
+  ┌─ COMPONENT: SERVICE CARD ─────────────────────────────────┐
+  │                                                            │
+  │  Size: flexible width, fixed height ~360px.               │
+  │  Background: white. Border: 1px --border. Rounded 16px.   │
+  │  Shadow: card shadow default, hover shadow on hover.      │
+  │                                                            │
+  │  Image: top 55% of card, object-fit cover, rounded-top    │
+  │  16px. Category badge overlaid bottom-left of image:      │
+  │  pill shape, --accent bg, white text, 11px font.          │
+  │                                                            │
+  │  Body (bottom 45%): padding 16px.                         │
+  │  - Service name: Clash Display 18px, 2-line max, ellipsis.│
+  │  - Duration: clock icon + "X min" — 13px muted grey.      │
+  │  - Description: 2-line clamp, DM Sans 13px muted.         │
+  │  - Bottom row: Price left (JetBrains Mono 20px, --accent) │
+  │    + "Add to Cart" button right (small, --primary bg,     │
+  │    white text, 36px height).                              │
+  │                                                            │
+  │  Add to Cart interaction: button flashes to --success     │
+  │  green with checkmark for 1s, then returns. Cart badge    │
+  │  bumps with scale animation.                              │
+  └────────────────────────────────────────────────────────────┘
+
+  ┌─ PAGE: SERVICES ──────────────────────────────────────────┐
+  │                                                            │
+  │  Page Header: Short hero strip (240px height), --primary  │
+  │  background, white "Our Services" title centered.         │
+  │  Breadcrumb below: Home > Services.                       │
+  │                                                            │
+  │  Layout: 2-panel — sidebar (left, 260px) + main grid.     │
+  │  Mobile: sidebar collapses into top filter row.           │
+  │                                                            │
+  │  [Sidebar / Filters]                                      │
+  │    Sticky on scroll.                                      │
+  │    - "Filter by Category": list of category names,        │
+  │      checkbox-style rows. Active = --accent text +        │
+  │      checkmark. Selecting filters service grid.           │
+  │    - "Select City": dropdown select, triggers area field. │
+  │    - "Select Area": dropdown, populated by city choice.   │
+  │    - "Clear Filters" link at bottom.                      │
+  │                                                            │
+  │  [Main Grid]                                              │
+  │    Top row: results count ("Showing 24 services") +       │
+  │    sort dropdown (Relevance / Price Low-High / etc).      │
+  │    3-col grid desktop, 2-col tablet, 1-col mobile.        │
+  │    Service Cards (see component above).                   │
+  │    Pagination at bottom: numbered pages, prev/next.       │
+  └────────────────────────────────────────────────────────────┘
+
+  ┌─ PAGE: SERVICE DETAIL ────────────────────────────────────┐
+  │                                                            │
+  │  2-column layout: image left (55%), info right (45%).     │
+  │  Mobile: stacked, image on top.                           │
+  │                                                            │
+  │  [Left — Image Column]                                    │
+  │    Large hero image, full height, object-fit cover,       │
+  │    rounded 20px. Category badge top-left overlay.         │
+  │                                                            │
+  │  [Right — Info Column]                                    │
+  │    - Breadcrumb: Home > Services > Category > Name        │
+  │    - Service name: Clash Display 40px.                    │
+  │    - Meta row: clock icon + duration | category tag pill  │
+  │    - Price: JetBrains Mono 32px, --accent color.          │
+  │    - Divider line.                                        │
+  │    - "About this Service" heading (16px semibold) +       │
+  │      full description text (DM Sans 15px, line-height     │
+  │      1.7).                                                │
+  │    - Quantity selector: [ − ] [ 1 ] [ + ] stepper.        │
+  │    - "Add to Cart" primary CTA button: full width,        │
+  │      56px height, --accent bg, white text, cart icon.     │
+  │    - Trust note below: "✓ Confirmed by admin after        │
+  │      booking | COD accepted"                              │
+  └────────────────────────────────────────────────────────────┘
+
+  ┌─ PAGE: CHECKOUT ──────────────────────────────────────────┐
+  │                                                            │
+  │  2-column layout: form left (60%), order summary right.   │
+  │  Mobile: stacked — summary shown first as collapsible.    │
+  │                                                            │
+  │  Progress indicator at top: 3 steps pill-bar:             │
+  │  [1 Cart] → [2 Details] → [3 Confirm]                    │
+  │  Current step highlighted in --accent.                    │
+  │                                                            │
+  │  [Left — Form]                                            │
+  │    Section: "Your Details"                                │
+  │    - Full Name input                                      │
+  │    - Email Address input                                  │
+  │    - Phone Number input                                   │
+  │                                                            │
+  │    Section: "Service Location"                            │
+  │    - City dropdown (populated from API)                   │
+  │    - Area dropdown (populated after city selected)        │
+  │    - Full Address textarea (3 rows)                       │
+  │                                                            │
+  │    Section: "Schedule"                                    │
+  │    - Date picker (calendar-style, min: today+1)           │
+  │    - Time slot grid: clickable time blocks (e.g. 9AM,     │
+  │      10AM, 11AM... 6PM) in a 4-col pill grid.             │
+  │      Selected slot: --accent bg, white text.              │
+  │      Unavailable: greyed out, line-through.               │
+  │                                                            │
+  │    Section: "Payment Method"                              │
+  │    - Single option visible: "Cash on Delivery"            │
+  │      with info icon, pre-selected, non-changeable.        │
+  │                                                            │
+  │    Input field style:                                     │
+  │    - Height: 48px. Border: 1px --border.                  │
+  │    - Focus: --accent border color, soft glow shadow.      │
+  │    - Label: 13px semibold, floats above on focus/fill.    │
+  │    - Error state: red border + error message below field. │
+  │                                                            │
+  │  [Right — Order Summary (sticky)]                         │
+  │    Card with --surface background.                        │
+  │    "Order Summary" heading.                               │
+  │    List of cart items: name + qty + price per row.        │
+  │    Subtotal row. Divider. Total row (larger, bold).       │
+  │    COD badge: "Cash on Delivery" pill.                    │
+  │                                                            │
+  │    "Place Order" button: full width, 56px, --accent.      │
+  │    Loading state: spinner inside button, text "Placing…"  │
+  └────────────────────────────────────────────────────────────┘
+
+  ┌─ PAGE: BOOKING CONFIRMATION ──────────────────────────────┐
+  │                                                            │
+  │  Centered layout. Max-width 560px. Lots of vertical space.│
+  │                                                            │
+  │  Top: Large animated checkmark icon (circle draws itself  │
+  │  in --success green, then check draws in, 600ms).         │
+  │                                                            │
+  │  Heading: "Booking Confirmed!" (Clash Display 36px).      │
+  │  Subtext: "We've sent a confirmation to your email."      │
+  │                                                            │
+  │  Booking Reference Card:                                  │
+  │    Prominent box, dashed border, --accent/10% bg.         │
+  │    "Your Booking Reference" label (small, muted).         │
+  │    Reference code: JetBrains Mono 28px, --accent, bold.   │
+  │    Copy-to-clipboard icon button beside it.               │
+  │                                                            │
+  │  Summary block: date, time, area, services list, total.   │
+  │  COD reminder note: info box, soft yellow bg.             │
+  │                                                            │
+  │  CTA buttons:                                             │
+  │    "Book Another Service" — outlined --primary button.    │
+  │    "Go to Home" — text link.                              │
+  └────────────────────────────────────────────────────────────┘
+
+  ┌─ PAGE: ABOUT US ──────────────────────────────────────────┐
+  │                                                            │
+  │  Page header strip (same as Services page header style).  │
+  │                                                            │
+  │  Content area: max-width 800px, centered.                 │
+  │  Rendered from CMS HTML (admin rich-text editor output).  │
+  │  Typography overrides applied:                            │
+  │    h1,h2,h3 → Clash Display                               │
+  │    p → DM Sans 16px, line-height 1.8                      │
+  │    blockquote → left border --accent 4px, italic, padded  │
+  │    images → full-width, rounded 12px, caption below       │
+  └────────────────────────────────────────────────────────────┘
+
+  ┌─ PAGE: CONTACT US ────────────────────────────────────────┐
+  │                                                            │
+  │  2-column layout: contact info left, form right.          │
+  │                                                            │
+  │  Left: CMS-rendered content (address, phone, email,       │
+  │  hours). Each detail with icon prefix. Map embed option   │
+  │  at bottom (iframe, rounded 12px).                        │
+  │                                                            │
+  │  Right: Contact form card (white, shadow).                │
+  │    Name, Email, Subject, Message textarea (6 rows).       │
+  │    "Send Message" CTA button, --accent.                   │
+  │    Success state: form replaced by checkmark + thank-you  │
+  │    message.                                               │
+  └────────────────────────────────────────────────────────────┘
+
+  ┌─ PAGE: POLICIES (Privacy / Terms / Refund) ───────────────┐
+  │                                                            │
+  │  Same layout as About Us — CMS-rendered content.          │
+  │  Left sidebar: sticky table of contents (auto-generated   │
+  │  from h2/h3 tags in content). Clicking jumps to section.  │
+  │  Active section highlighted in sidebar.                   │
+  └────────────────────────────────────────────────────────────┘
+
+
+════════════════════════════════════════════════════════════════
+  ADMIN PANEL — DESIGN LANGUAGE
+════════════════════════════════════════════════════════════════
+
+  Overall Tone:
+    Dark, dense, data-forward. Feels like a professional SaaS
+    dashboard tool. High information density without clutter.
+    Confident and functional.
+
+  Background:  #0F0F14 (near-black)
+  Surface:     #1A1A24 (cards, panels)
+  Surface-2:   #22222F (inputs, code blocks)
+  Border:      #2E2E3E
+  Text:        #E8E8F0 (primary) | #8888A0 (muted)
+  Accent:      #E8622A (same as user site — brand consistency)
+  Success:     #34D399
+  Warning:     #FBBF24
+  Danger:      #F87171
+
+  Typography:
+    Headers: Syne 20–28px
+    Body/Labels: DM Sans 13–15px
+    Data/Numbers: JetBrains Mono 13px
+
+  Layout: Fixed left sidebar (240px) + main content area.
+  Mobile: Sidebar collapses to icon-only rail (48px wide).
+
+
+════════════════════════════════════════════════════════════════
+  ADMIN PANEL — GLOBAL ELEMENTS
+════════════════════════════════════════════════════════════════
+
+  ┌─ ADMIN LOGIN PAGE ────────────────────────────────────────┐
+  │                                                            │
+  │  Full-screen centered layout. Background: dark gradient   │
+  │  with subtle noise texture overlay.                       │
+  │  Geometric decorative lines (faint) in background.        │
+  │                                                            │
+  │  Login card: 420px wide, surface color, rounded 20px,     │
+  │  heavy shadow. Padding: 48px.                             │
+  │                                                            │
+  │  Logo + "Admin Panel" label at top.                       │
+  │  Username + Password inputs (dark surface-2 bg).          │
+  │  "Login" button: full width, --accent bg.                 │
+  │  Error message: slides in below button, danger color.     │
+  └────────────────────────────────────────────────────────────┘
+
+  ┌─ SIDEBAR ─────────────────────────────────────────────────┐
+  │                                                            │
+  │  Fixed left, 240px wide, full height, surface background. │
+  │  Border-right: 1px border color.                          │
+  │                                                            │
+  │  Top: Logo + "Admin" label. 64px tall.                    │
+  │                                                            │
+  │  Navigation groups (with section labels in small caps):   │
+  │                                                            │
+  │  OVERVIEW                                                 │
+  │    Dashboard (grid icon)                                  │
+  │                                                            │
+  │  CATALOG                                                  │
+  │    Categories (tag icon)                                  │
+  │    Services (briefcase icon)                              │
+  │                                                            │
+  │  BOOKINGS                                                 │
+  │    All Bookings (calendar icon)                           │
+  │                                                            │
+  │  LOCATION                                                 │
+  │    Cities (map-pin icon)                                  │
+  │    Areas (layers icon)                                    │
+  │                                                            │
+  │  APPEARANCE                                               │
+  │    Theme Settings (palette icon)                          │
+  │    Hero Banner (image icon)                               │
+  │                                                            │
+  │  CONTENT                                                  │
+  │    CMS Pages (file-text icon)                             │
+  │                                                            │
+  │  Active link: --accent left border (3px), --accent/10%   │
+  │  background, --accent text. Others: muted text.           │
+  │  Hover: slight background lighten.                        │
+  │                                                            │
+  │  Bottom: Admin username + "Logout" button.                │
+  └────────────────────────────────────────────────────────────┘
+
+  ┌─ TOP BAR ─────────────────────────────────────────────────┐
+  │                                                            │
+  │  Height: 56px. Surface background. Border-bottom.         │
+  │  Left: Page title (Syne 20px white).                      │
+  │  Right: "View Site" link (opens user site in new tab) +   │
+  │  notification bell (if new bookings pending).             │
+  └────────────────────────────────────────────────────────────┘
+
+
+════════════════════════════════════════════════════════════════
+  ADMIN PANEL — PAGE BY PAGE
+════════════════════════════════════════════════════════════════
+
+  ┌─ DASHBOARD ───────────────────────────────────────────────┐
+  │                                                            │
+  │  Row 1 — Stat Cards (4 cards):                            │
+  │    Each card: surface bg, rounded 14px, padding 24px.     │
+  │    - Total Bookings (all time)                            │
+  │    - Pending Bookings (badge pulses if > 0)               │
+  │    - Today's Bookings                                     │
+  │    - Total Revenue (manual/COD, summed)                   │
+  │    Each card: icon (48px, accent/10% bg circle) + big     │
+  │    number (JetBrains Mono 36px white) + label + small     │
+  │    trend indicator (↑ +12% this week, green).             │
+  │                                                            │
+  │  Row 2 — Recent Bookings Table (last 10):                 │
+  │    Columns: Ref | Customer | City/Area | Date | Status |  │
+  │    Amount | Action.                                       │
+  │    Status as colored badge pill.                          │
+  │    Action: "View" button → opens detail modal.            │
+  │                                                            │
+  │  Row 3 — Quick Summary:                                   │
+  │    Left: Bookings by status (horizontal bar chart,        │
+  │    simple CSS bar, no library needed).                    │
+  │    Right: Top 5 services by booking count.                │
+  └────────────────────────────────────────────────────────────┘
+
+  ┌─ MANAGE CATEGORIES ───────────────────────────────────────┐
+  │                                                            │
+  │  Top bar: "Add New Category" button right-aligned         │
+  │  (--accent bg).                                           │
+  │                                                            │
+  │  Table: Name | Icon | Active Toggle | Actions.            │
+  │  Active Toggle: iOS-style toggle switch.                  │
+  │  Actions: Edit (pencil icon) | Delete (trash icon).       │
+  │                                                            │
+  │  Add/Edit: Slide-in right drawer (not modal).             │
+  │  Form: Name input + icon URL or upload + active toggle.   │
+  │  "Save" and "Cancel" buttons at bottom of drawer.         │
+  └────────────────────────────────────────────────────────────┘
+
+  ┌─ MANAGE SERVICES ─────────────────────────────────────────┐
+  │                                                            │
+  │  Filters row: Category dropdown + Search input.           │
+  │  "Add New Service" button right-aligned.                  │
+  │                                                            │
+  │  Table: Image thumbnail | Name | Category | Price |       │
+  │  Duration | Active | Actions.                             │
+  │                                                            │
+  │  Add/Edit: Full-width form page (not drawer, due to       │
+  │  amount of fields).                                       │
+  │  Fields: Name, Category dropdown, Description (textarea), │
+  │  Price, Duration (minutes), Image upload/URL, Active.     │
+  │  "Save Service" and "Cancel" buttons sticky at bottom.    │
+  └────────────────────────────────────────────────────────────┘
+
+  ┌─ MANAGE BOOKINGS ─────────────────────────────────────────┐
+  │                                                            │
+  │  Filter bar: Status (All/Pending/Confirmed/Completed/     │
+  │  Cancelled) as tab pills + City dropdown + Date range     │
+  │  picker + Search by Ref/Name.                             │
+  │                                                            │
+  │  Table: Ref | Customer Name | Email | City/Area |         │
+  │  Scheduled | Items | Total | Status | Actions.            │
+  │                                                            │
+  │  Row click OR "View" action → Detail Modal:               │
+  │    Modal: 680px wide, dark surface.                       │
+  │    Left col: Booking info (ref, date, customer details,   │
+  │    address, scheduled time).                              │
+  │    Right col: Items ordered (name, qty, price).           │
+  │    Footer: Status dropdown selector + "Admin Notes"       │
+  │    textarea + "Update Booking" save button.               │
+  │                                                            │
+  │  Status badge colors:                                     │
+  │    pending     → yellow/amber pill                        │
+  │    confirmed   → blue pill                                │
+  │    in_progress → orange pill                              │
+  │    completed   → green pill                               │
+  │    cancelled   → red pill                                 │
+  └────────────────────────────────────────────────────────────┘
+
+  ┌─ MANAGE CITIES & AREAS ───────────────────────────────────┐
+  │                                                            │
+  │  2-panel layout: Cities left (40%), Areas right (60%).    │
+  │                                                            │
+  │  [Cities Panel]                                           │
+  │    "Add City" button.                                     │
+  │    List of cities: name + active toggle + edit/delete.    │
+  │    Selecting a city highlights it and loads its areas.    │
+  │                                                            │
+  │  [Areas Panel]                                            │
+  │    Header: "Areas in [Selected City]".                    │
+  │    "Add Area" button.                                     │
+  │    List of areas: name + active toggle + edit/delete.     │
+  │                                                            │
+  │  Add/Edit via inline inline expanding row (not drawer).   │
+  └────────────────────────────────────────────────────────────┘
+
+  ┌─ THEME SETTINGS ──────────────────────────────────────────┐
+  │                                                            │
+  │  Live preview pane on right (40%) shows a mini mockup of  │
+  │  the user site header, hero strip, and a service card.    │
+  │  Updates in real-time as admin changes colors.            │
+  │                                                            │
+  │  Left panel: settings form.                               │
+  │  - Primary Color: color picker wheel + hex input.         │
+  │  - Accent Color: color picker + hex input.                │
+  │  - Surface Color: color picker + hex input.               │
+  │  - Site Font: dropdown (Clash Display, Syne, Playfair,    │
+  │    Raleway, etc — curated safe options).                  │
+  │  - Button Border Radius: slider (4px–24px).               │
+  │                                                            │
+  │  "Save Theme" button: --accent. "Reset to Default" link.  │
+  │                                                            │
+  │  Note: Changes saved to cms_settings, frontend fetches    │
+  │  and applies via CSS variables on load.                   │
+  └────────────────────────────────────────────────────────────┘
+
+  ┌─ HERO BANNER ─────────────────────────────────────────────┐
+  │                                                            │
+  │  Live preview at top: 100% width, 280px height, shows     │
+  │  current hero as it appears on homepage.                  │
+  │                                                            │
+  │  Form below:                                              │
+  │  - Hero Image: drag-and-drop upload zone (dashed border,  │
+  │    upload icon, "or click to browse"). Shows thumbnail    │
+  │    of current image.                                      │
+  │  - Headline: text input.                                  │
+  │  - Subheadline: text input.                               │
+  │  - CTA Button Text: text input.                           │
+  │  - CTA Button Link: text input (optional).                │
+  │                                                            │
+  │  "Save Changes" button. Preview updates on save.          │
+  └────────────────────────────────────────────────────────────┘
+
+  ┌─ CMS PAGES ───────────────────────────────────────────────┐
+  │                                                            │
+  │  Tab bar at top: [About Us] [Contact Us] [Privacy Policy] │
+  │  [Terms of Service] [Refund Policy]                       │
+  │  Active tab underlined in --accent.                       │
+  │                                                            │
+  │  Each tab = full rich-text editor (Quill.js):             │
+  │  Toolbar: Bold, Italic, Underline, Link, Image, Heading   │
+  │  levels (H1 H2 H3), bullet list, numbered list, quote,   │
+  │  align options.                                           │
+  │                                                            │
+  │  Editor area: white background (light theme inside dark   │
+  │  admin for readability), min-height 500px, DM Sans 15px.  │
+  │                                                            │
+  │  Below editor: "Save Page" button + "Last saved: X        │
+  │  minutes ago" timestamp.                                  │
+  │                                                            │
+  │  Contact Us tab additional fields (below editor):        │
+  │  - Phone Number input                                     │
+  │  - Email Address input                                    │
+  │  - Office Address textarea                                │
+  │  - Google Maps Embed URL input                            │
+  └────────────────────────────────────────────────────────────┘
+
+
+════════════════════════════════════════════════════════════════
+  COMPONENT STATES & MICRO-INTERACTIONS
+════════════════════════════════════════════════════════════════
+
+  Buttons:
+    Default → Hover (brightness +10%, translateY -1px)
+    → Active/Press (scale 0.97, brightness -5%)
+    → Loading (spinner inside, text fades, disabled)
+    → Success (green flash for 1s on confirm actions)
+    → Disabled (opacity 0.4, cursor not-allowed)
+
+  Form Inputs:
+    Default: --border outline
+    Focus: --accent outline (2px), soft outer glow
+    Filled: label floats up (12px, smaller)
+    Error: red outline + error text slides in below (12px)
+    Success: green checkmark appears right side
+
+  Toggle Switches (Active/Inactive):
+    Track: grey (off) → --accent (on)
+    Thumb: white circle, slides with spring animation
+    Transition: 200ms spring
+
+  Table Rows:
+    Default: transparent
+    Hover: surface-2 background, 150ms ease
+    Selected: --accent/8% background
+
+  Modals:
+    Entry: backdrop fades in (200ms), modal scales from 95%→100%
+    + fades in (250ms).
+    Exit: reverse.
+    Backdrop click closes modal.
+    ESC key closes modal.
+
+  Toast Notifications (Admin):
+    Appear top-right. Slide in from right.
+    Auto-dismiss after 4s with progress bar.
+    Types: success (green), error (red), info (blue).
+
+  Empty States:
+    Centered illustration (simple line art SVG).
+    Heading: what's missing. Subtext: what to do.
+    CTA button when applicable.
+
+  Loading States:
+    Tables: skeleton rows (animated shimmer).
+    Cards: skeleton card blocks.
+    Full page: centered spinner (--accent color).
+
+
+════════════════════════════════════════════════════════════════
+  RESPONSIVE BREAKPOINTS
+════════════════════════════════════════════════════════════════
+
+  Mobile   : < 640px
+  Tablet   : 640px – 1024px
+  Desktop  : > 1024px
+  Wide     : > 1280px
+
+  Key responsive changes:
+  - Navbar → hamburger menu under 768px
+  - Hero → reduced height, font size on mobile
+  - Services grid → 1-col on mobile, 2-col tablet, 3-col desktop
+  - Checkout → single column on mobile
+  - Admin sidebar → icon-only on tablet, hidden + overlay on mobile
+  - CMS/Bookings tables → horizontal scroll on mobile
+
+
+════════════════════════════════════════════════════════════════
+  ACCESSIBILITY NOTES
+════════════════════════════════════════════════════════════════
+
+  - All interactive elements: visible focus ring (--accent,
+    2px outline, 2px offset).
+  - Color contrast: all text meets WCAG AA (4.5:1 minimum).
+  - Form inputs: associated <label> elements always present.
+  - Images: meaningful alt text required.
+  - Cart drawer: focus trap while open, ESC to close.
+  - Modals: focus trap + aria-modal + role="dialog".
+  - Status badges: not color-only; include text label.
+  - Buttons: aria-label when icon-only.
+
+
+================================================================
+  END OF UI DESCRIPTION GUIDE
+================================================================

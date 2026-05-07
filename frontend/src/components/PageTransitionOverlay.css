@@ -1,0 +1,57 @@
+.page-transition-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 200;
+  transition: opacity 0.38s ease;
+}
+
+.page-transition-overlay.show {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.page-transition-overlay.light {
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.page-transition-overlay.dark {
+  background: rgba(7, 9, 15, 0.96);
+}
+
+.page-transition-center {
+  transform: scale(0.94);
+  opacity: 0;
+  transition: transform 0.42s ease, opacity 0.42s ease;
+}
+
+.page-transition-overlay.show .page-transition-center {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.page-transition-logo {
+  width: 92px;
+  height: 92px;
+  object-fit: contain;
+  border-radius: 16px;
+  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.15));
+}
+
+.page-transition-fallback {
+  width: 92px;
+  height: 92px;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 34px;
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.15);
+}

@@ -1,0 +1,389 @@
+USER SIDE STRUCTURE + DATA RENDERING + API CONTRACT
+Project: WEBSITE-SM
+Audience: Frontend/backend developers
+Purpose: Quick reference for user-side UI flow, what data each screen needs, and what each API returns.
+
+==================================================
+1) USER ROUTES AND UI STRUCTURE
+==================================================
+
+Global user layout:
+- Navbar (logo, links, cart button)
+- Main content (route outlet)
+- Footer
+- Cart drawer (global, opens from navbar/add-to-cart)
+
+Routes:
+1. /                       -> Home
+2. /services               -> Services listing + category filter
+3. /services/:id           -> Service detail page (carousel + rich description)
+4. /checkout               -> Checkout form + booking submit
+5. /booking/confirmed      -> Confirmation page (uses state/query from checkout flow)
+6. /about                  -> About page (CMS content)
+7. /contact                -> Contact form page
+8. /policies/:slug         -> Dynamic policy page (CMS content by slug)
+
+==================================================
+2) CORE FRONTEND DATA FLOW (USER SIDE)
+==================================================
+
+2.1 CMSContext
+- Calls GET /api/cms once (and on manual refresh).
+- Applies runtime CSS variables to :root for theming.
+- Theme source selection logic:
+  - If cms.active_theme_id matches a record inside cms.theme_library, use that theme object.
+  - Else use base cms fields directly.
+
+Primary theme fields read by user UI:
+- primary_color
+- secondary_color
+- accent_color
+- surface_color
+- font_family
+- button_radius
+- theme_library (JSON string array)
+- active_theme_id
+
+2.2 CartContext
+- Stored in localStorage key: sb_cart_v1
+- Item shape:
+  {
+    serviceId: number,
+    name: string,
+    price: number,
+    quantity: number,
+    categoryName: string,
+    image_url: string
+  }
+- Derived values:
+  - totalQty
+  - subtotal
+
+==================================================
+3) PAGE-WISE RENDERING REQUIREMENTS
+==================================================
+
+3.1 Home (/)
+Primary API usage:
+- GET /api/categories
+- GET /api/services
+- GET /api/cms (hero banner slideshow data)
+
+Render rules:
+- Show hero/banner content from CMS.
+- Hero supports slideshow banners (max 5) using cms.hero_banners JSON.
+- Each slide supports:
+  - image_url (required for visible slide)
+  - link (optional, falls back to global hero_cta_link)
+  - badge (optional)
+  - title (optional override)
+  - subtitle (optional override)
+  - button_text (optional override)
+- Slideshow auto-rotates and has dot navigation.
+- Render active categories as quick navigation blocks/cards.
+- Render featured/latest services (currently first N from /api/services).
+- Each service card should support add-to-cart and link to /services/:id.
+
+3.2 Services (/services)
+Primary API usage:
+- GET /api/categories
+- GET /api/services (or GET /api/services?category_id={id})
+
+Render rules:
+- Category filter controls.
+- Grid/list of services based on selected category.
+- Service card fields required:
+  - name
+  - category_name
+  - price
+  - duration_minutes
+  - thumbnail (image_url or first image_urls entry)
+
+3.3 Service Detail (/services/:id)
+Primary API usage:
+- GET /api/services/:id
+
+Render rules:
+- Title, category label, price, duration.
+- Multi-image carousel using image_urls (auto-scroll + dots).
+- Fallback to image_url when image_urls empty.
+- Description is rich HTML (from Quill), render as trusted formatted content.
+- Add-to-cart CTA.
+
+3.4 Checkout (/checkout)
+Primary API usage:
+- GET /api/cities
+- GET /api/areas?city_id={cityId}
+- POST /api/bookings
+
+Render rules:
+- Show cart summary from CartContext.
+- Collect guest details, city/area, address, schedule date/time, payment_method.
+- On successful POST /api/bookings:
+  - clear cart
+  - redirect to /booking/confirmed (with booking_ref and key summary)
+
+3.5 Booking Confirmation (/booking/confirmed)
+Primary data source:
+- Booking response from checkout redirect state.
+- Optional future fetch: GET /api/bookings/:ref for refresh-safe view.
+
+Render rules:
+- Show booking_ref prominently.
+- Show scheduled date/time and total.
+- Show reassurance/instructions text.
+
+3.6 About (/about), Contact (/contact), Policies (/policies/:slug)
+Primary API usage:
+- GET /api/cms (for static CMS blocks/policies)
+- POST /api/contact (contact form submit)
+
+Render rules:
+- About and policy content driven by CMS HTML/text fields.
+- Contact form sends name/email/phone/message.
+- Success and error toast/alert feedback.
+
+==================================================
+4) USER-SIDE API CONTRACTS (WHAT RETURNS WHAT)
+==================================================
+
+Base URL in dev (via Vite proxy):
+- Frontend calls relative /api/*
+- Proxy target currently points to backend on port 5001.
+
+--------------------------------------------------
+4.1 GET /api/cms
+--------------------------------------------------
+Use: global site settings and theme data.
+
+Response (object; keys are CMS settings):
+{
+  "site_name": "string",
+  "site_tagline": "string",
+  "primary_color": "#hex",
+  "secondary_color": "#hex",
+  "accent_color": "#hex",
+  "surface_color": "#hex",
+  "font_family": "string",
+  "button_radius": "number-as-string-or-number",
+  "hero_banners": "[{\"image_url\":\"...\",\"link\":\"/services\",\"badge\":\"...\",\"title\":\"...\",\"subtitle\":\"...\",\"button_text\":\"...\"}]",
+  "theme_library": "[{...} as JSON string]",
+  "active_theme_id": "string"
+  // plus additional CMS keys used by pages/hero/policies
+}
+
+Notes:
+- theme_library is stored as JSON string, parse safely.
+- hero_banners is stored as JSON string array with max 5 slides.
+- Unknown keys can exist; do not hard-fail if extra fields appear.
+
+--------------------------------------------------
+4.2 GET /api/categories
+--------------------------------------------------
+Use: category tabs/cards in Home/Services.
+
+Response (array):
+[
+  {
+    "id": 1,
+    "name": "string",
+    "description": "string",
+    "image_url": "https://... or /uploads/...",
+    "icon_url": "string (legacy, optional)",
+    "priority": 0
+  }
+]
+
+Guaranteed filter:
+- Only active categories.
+- Sorted by priority ASC, then name ASC.
+
+--------------------------------------------------
+4.3 GET /api/services
+4.4 GET /api/services?category_id={id}
+--------------------------------------------------
+Use: list services globally or by category.
+
+Response (array):
+[
+  {
+    "id": 1,
+    "name": "string",
+    "description": "<p>rich html</p>",
+    "price": 299.0,
+    "duration_minutes": 60,
+    "image_url": "string",
+    "image_urls": ["string", "string"],
+    "category_id": 2,
+    "category_name": "string"
+  }
+]
+
+Notes:
+- Only active services under active categories.
+- image_urls max is 5 (enforced by admin APIs).
+- Use image_urls[0] as primary image when available.
+
+--------------------------------------------------
+4.5 GET /api/services/:id
+--------------------------------------------------
+Use: service detail page.
+
+Response (object):
+{
+  "id": 1,
+  "name": "string",
+  "description": "<p>rich html</p>",
+  "price": 299.0,
+  "duration_minutes": 60,
+  "image_url": "string",
+  "image_urls": ["string", "string"],
+  "category_id": 2,
+  "category_name": "string"
+}
+
+Errors:
+- 404 -> { "error": "Not found" }
+
+--------------------------------------------------
+4.6 GET /api/cities
+--------------------------------------------------
+Use: city dropdown in checkout.
+
+Response (array):
+[
+  { "id": 1, "name": "string" }
+]
+
+--------------------------------------------------
+4.7 GET /api/areas?city_id={id}
+--------------------------------------------------
+Use: dependent area dropdown in checkout.
+
+Response (array):
+[
+  { "id": 11, "name": "string", "city_id": 1 }
+]
+
+Errors:
+- 400 -> { "error": "city_id required" }
+
+--------------------------------------------------
+4.8 POST /api/bookings
+--------------------------------------------------
+Use: place booking from checkout.
+
+Request body:
+{
+  "guest_name": "string",
+  "guest_email": "string",
+  "guest_phone": "string",
+  "city_id": 1,
+  "area_id": 11,
+  "address": "string",
+  "scheduled_date": "YYYY-MM-DD",
+  "scheduled_time": "HH:MM[:SS]",
+  "payment_method": "COD",
+  "items": [
+    { "service_id": 7, "quantity": 2 }
+  ]
+}
+
+Success response (201):
+{
+  "booking_ref": "SB-XXXXXX",
+  "total_amount": 999.0,
+  "scheduled_date": "YYYY-MM-DD",
+  "scheduled_time": "HH:MM:SS"
+}
+
+Common error responses:
+- 400 -> validation errors (missing fields, invalid line item, unavailable service)
+- 500 -> server/db failure
+
+--------------------------------------------------
+4.9 GET /api/bookings/:ref
+--------------------------------------------------
+Use: fetch full booking details by reference (guest-facing lookup).
+
+Response (object):
+{
+  "id": 1,
+  "booking_ref": "SB-XXXXXX",
+  "guest_name": "string",
+  "guest_email": "string",
+  "guest_phone": "string",
+  "city_id": 1,
+  "city_name": "string",
+  "area_id": 11,
+  "area_name": "string",
+  "address": "string",
+  "scheduled_date": "YYYY-MM-DD",
+  "scheduled_time": "HH:MM:SS",
+  "status": "pending|confirmed|in_progress|completed|cancelled",
+  "total_amount": 999.0,
+  "created_at": "datetime string",
+  "items": [
+    { "service_name": "string", "price": 499.0, "quantity": 2 }
+  ]
+}
+
+--------------------------------------------------
+4.10 POST /api/contact
+--------------------------------------------------
+Use: submit contact form.
+
+Request body:
+{
+  "name": "string",
+  "email": "string",
+  "phone": "string",
+  "message": "string"
+}
+
+Success response:
+{ "ok": true }
+
+Typical errors:
+- 400 for missing required fields.
+
+==================================================
+5) RENDERING FORMAT STANDARDS (IMPORTANT)
+==================================================
+
+1. Currency:
+- Use Number(price) and display with fixed 2 decimals where needed.
+
+2. Rich description:
+- service.description is HTML (Quill output), render as formatted content container.
+
+3. Images:
+- Primary display priority:
+  a) image_urls[0] if array exists and non-empty
+  b) image_url fallback
+  c) placeholder image
+
+4. Sorting:
+- Categories should follow backend order (priority then name), avoid re-sorting unless required.
+
+5. Defensive parsing:
+- Handle null/undefined/empty string for optional fields.
+- Parse JSON fields safely (theme_library, image_urls when needed).
+
+==================================================
+6) QUICK IMPLEMENTATION CHECKLIST FOR NEW DEVELOPER
+==================================================
+
+- Setup CMSContext first (theme + site settings).
+- Setup CartContext (localStorage persistence).
+- Build pages in this order: Home -> Services -> ServiceDetail -> Checkout -> Confirmation.
+- Integrate /api/cities and /api/areas dependent dropdown before booking submit.
+- Submit booking via /api/bookings and handle 201 + validation errors clearly.
+- Keep UI resilient for missing images and optional CMS fields.
+
+MOST IMPORTANT POINT : 
+UI TO BE IN THE HTML FILE ALL CSS , HTML , JS IN JUST SINGLE HTML FILE
+
+
+
+End of structure reference.
